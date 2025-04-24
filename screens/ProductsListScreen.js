@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 
 export default function ProductsListScreen({ navigation, products, togglePriceSort }) {
+  
   const goToDetail = (item) => {
     navigation.navigate('ProductDetail', { product: item });
   };
@@ -9,7 +10,7 @@ export default function ProductsListScreen({ navigation, products, togglePriceSo
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Список продуктов</Text>
+        <Text style={styles.title}>{"Lista produktów"}</Text>
         <TouchableOpacity onPress={togglePriceSort} style={styles.filterButton}>
           <Text style={styles.filterText}>🔃</Text>
         </TouchableOpacity>
@@ -27,7 +28,7 @@ export default function ProductsListScreen({ navigation, products, togglePriceSo
         style={styles.addButton}
         onPress={() => navigation.navigate('AddProduct')}
       >
-        <Text style={styles.addButtonText}>+ Добавить продукт</Text>
+        <Text style={styles.addButtonText}>{"Dodać produkt"}</Text>
       </TouchableOpacity>
     </View>
   );

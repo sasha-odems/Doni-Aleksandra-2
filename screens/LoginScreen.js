@@ -4,8 +4,10 @@ import {
   createStaticNavigation,
   useNavigation,
 } from '@react-navigation/native';
+import supabase from "../Database"
 const LoginScreen = ({ onLoginChange, onLoginPress }) => {
   const [login, setLogin] = useState('');
+
   const navigation = useNavigation()
   const handleChange = (text) => {
     setLogin(text);
@@ -16,6 +18,7 @@ const LoginScreen = ({ onLoginChange, onLoginPress }) => {
 
   const handlePress = () => {
     navigation.navigate("ProductsList")
+
   };
 
   return (
@@ -24,13 +27,13 @@ const LoginScreen = ({ onLoginChange, onLoginPress }) => {
         style={styles.input}
         value={login}
         onChangeText={handleChange}
-        placeholder="Enter Login"
+        placeholder="Enter login"
         autoCapitalize="none"
         autoCorrect={false}
         returnKeyType="done"
       />
       <TouchableOpacity style={styles.button} onPress={handlePress}>
-        <Text style={styles.buttonText}>Войти</Text>
+        <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
     </View>
   );

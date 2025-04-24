@@ -16,15 +16,18 @@ export default function ProductDetailScreen({ route, navigation, toggleBought, d
       <Text style={styles.detail}>Магазин: {product.store}</Text>
       <TouchableOpacity
         style={styles.button}
-        onPress={() => toggleBought(product.id)}
+        onPress={() => {
+          toggleBought(product.id) 
+          product.is_bought = !product.is_bought
+          }}
       >
-        <Text style={styles.buttonText}>{product.bought ? 'Отменить покупку' : 'Отметить куплено'}</Text>
+        <Text style={styles.buttonText}>{product.is_bought ? 'Kupione' : 'Oznaczyć jako kupione'}</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={[styles.button, styles.delete]}
         onPress={handleDelete}
       >
-        <Text style={styles.buttonText}>Удалить</Text>
+        <Text style={styles.buttonText}>Usunąć</Text>
       </TouchableOpacity>
     </View>
   );

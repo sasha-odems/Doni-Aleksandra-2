@@ -7,133 +7,35 @@ import ProductsListScreen from './screens/ProductsListScreen';
 import ProductDetailScreen from './screens/ProductDetailScreen';
 import AddProductScreen from './screens/AddProductScreen';
 import LoginScreen from "./screens/LoginScreen"
-function DashboardScreen() {
-  const [products, setProducts] = useState([]);
-  const [newProduct, setNewProduct] = useState({ name: "", price: "", store: "" });
-  const [isPriceSorted, setIsPriceSorted] = useState(false);
-
-  const handleChange = (key, value) => setNewProduct({ ...newProduct, [key]: value });
-
-  const addProduct = () => {
-    if (!newProduct.name || !newProduct.price || !newProduct.store) {
-      return Alert.alert("Błąd", "Wypełnij wszystkie pola");
-    }
-    const price = parseFloat(newProduct.price.replace(",", "."));
-    if (isNaN(price) || price <= 0) return Alert.alert("Błąd", "Podaj poprawną cenę!");
-    setProducts([...products, { ...newProduct, id: Date.now().toString(), price, bought: false }]);
-    setNewProduct({ name: "", price: "", store: "" });
-  };
-
-  const toggleBought = (id) => {
-    setProducts(products.map((p) => (p.id === id ? { ...p, bought: !p.bought } : p)));
-  };
-
-  const deleteProduct = (id) => setProducts(products.filter((p) => p.id !== id));
-
-  const togglePriceSort = () => {
-    setIsPriceSorted(!isPriceSorted);
-  };
-
-  const sortedProducts = [...products].sort((a, b) => (isPriceSorted ? a.price - b.price : 0));
-
-  const renderItem = ({ item }) => (
-    <View style={styles.item}>
-      <Text style={[styles.itemText, item.bought && styles.boughtText]}>
-        {item.name} - {item.price.toFixed(2)} zł ({item.store})
-      </Text>
-      <View style={styles.buttonsContainer}>
-        <TouchableOpacity onPress={() => toggleBought(item.id)} style={[styles.checkButton, item.bought && styles.checked]}>
-          <Text style={styles.buttonText}>{item.bought ? "✅" : "☑️"}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => deleteProduct(item.id)} style={styles.deleteButton}>
-          <Text style={styles.buttonText}>🗑️</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={[styles.title, styles.centerText]}>Lista zakupów</Text>
-        <TouchableOpacity onPress={togglePriceSort} style={[styles.filterButton, isPriceSorted && styles.activeFilterBorder]}>
-          <Text style={[styles.buttonText, isPriceSorted && styles.activeFilter]}>🔃</Text>
-        </TouchableOpacity>
-      </View>
-      <TextInput
-        placeholder="Nazwa produktu"
-        style={styles.input}
-        placeholderTextColor="black"
-        value={newProduct.name}
-        onChangeText={(value) => handleChange("name", value)}
-      />
-      <TextInput
-        placeholder="Cena"
-        style={styles.input}
-        placeholderTextColor="black"
-        keyboardType="numeric"
-        value={newProduct.price}
-        onChangeText={(value) => handleChange("price", value)}
-      />
-      <TextInput
-        placeholder="Sklep"
-        style={styles.input}
-        placeholderTextColor="black"
-        value={newProduct.store}
-        onChangeText={(value) => handleChange("store", value)}
-      />
-      <TouchableOpacity onPress={addProduct} style={styles.addButton}>
-        <Text style={styles.addButtonText}>+ Dodaj produkt</Text>
-      </TouchableOpacity>
-      {[false, true].map((bought) => (
-        <FlatList
-          key={bought.toString()}
-          data={sortedProducts.filter((p) => p.bought === bought)}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          ListHeaderComponent={<Text style={styles.sectionText}>{bought ? "Kupione" : "Do zakupu"}</Text>}
-        />
-      ))}
-    </View>
-  );
-}
-const ProductScreen = ({route})=>{
-  const {itemId, ...rest} = route.params
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Details Screen</Text>
-      <Text>itemId: {JSON.stringify(itemId)}</Text>
-      <Text>otherParam: {JSON.stringify(otherParam)}</Text>
-      <Button
-        onPress={
-          () =>
-            navigation.push('Details', {
-              itemId: Math.floor(Math.random() * 100),
-            })
-        }
-      >
-        Go to Details... again
-      </Button>
-      <Button onPress={() => navigation.navigate('Home')}>Go to Home</Button>
-      <Button onPress={() => navigation.goBack()}>Go back</Button>
-    </View>
-  );
-}
+import {supabase} from "./Database"
 const Stack = createNativeStackNavigator();
 export default function App() {
   const [user, setUser] = useState(null)
+
   const [products, setProducts] = useState([]);
   const [isPriceSorted, setIsPriceSorted] = useState(false);
 
-  const addProduct = (product) => {
-    setProducts(prev => [...prev, product]);
+  React.useEffect(()=>{
+    const fetchProducts = async ()=>{
+      const {data} = await supabase.from("products").select("*")
+      setProducts(data)
+    }
+    fetchProducts()
+  }, [products])
+  const addProduct = async (product) => {
+    const {data, error} = await supabase.from("products").insert({name: product.name, price: product.price, store: product.store}).select()
+    setProducts(prev => [...prev, data?.[0]]);
   };
 
-  const toggleBought = (id) => {
-    setProducts(prev => prev.map(p => p.id === id ? { ...p, bought: !p.bought } : p));
+  const toggleBought =  async (id) => {
+    const {data: productData, error: productError} = await supabase.from("products").select().eq("id", id)
+    const isBought = productData?.[0].is_bought.toString().toLowerCase() === "true"
+    const {data, error} = await supabase.from("products").update({is_bought: !isBought }).eq("id", id).select()
+    setProducts(prev => prev.map(p=> p.id === id ? data?.[0] : p))
   };
 
-  const deleteProduct = (id) => {
+  const deleteProduct = async (id) => {
+    const {data, error} = await supabase.from("products").delete().eq("id", id)
     setProducts(prev => prev.filter(p => p.id !== id));
   };
 
@@ -158,7 +60,7 @@ export default function App() {
             />
           )}
         </Stack.Screen>
-        <Stack.Screen name="ProductDetail" options={{ title: 'Детали продукта' }}>
+        <Stack.Screen name="ProductDetail" options={{ title: 'Szczeguły Produktu' }}>
           {props => (
             <ProductDetailScreen
               {...props}
@@ -167,7 +69,7 @@ export default function App() {
             />
           )}
         </Stack.Screen>
-        <Stack.Screen name="AddProduct" options={{ title: 'Добавить продукт' }}>
+        <Stack.Screen name="AddProduct" options={{ title: 'Dodać produkt' }}>
           {props => (
             <AddProductScreen
               {...props}

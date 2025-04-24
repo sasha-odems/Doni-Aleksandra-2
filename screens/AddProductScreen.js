@@ -8,11 +8,11 @@ export default function AddProductScreen({ navigation, addProduct }) {
 
   const handleAdd = () => {
     if (!name || !price || !store) {
-      return Alert.alert('Ошибка', 'Заполните все поля');
+      return Alert.alert('Błąd', 'Nie wszystkie pola są wypełnione');
     }
     const parsed = parseFloat(price.replace(',', '.'));
     if (isNaN(parsed) || parsed <= 0) {
-      return Alert.alert('Ошибка', 'Укажите корректную цену');
+      return Alert.alert('Błąd', 'Proszę o wskazanie poprawnej ceny');
     }
     addProduct({ id: Date.now().toString(), name, price: parsed, store, bought: false });
     navigation.goBack();
@@ -21,26 +21,26 @@ export default function AddProductScreen({ navigation, addProduct }) {
   return (
     <View style={styles.container}>
       <TextInput
-        placeholder="Название"
+        placeholder="Nazwa"
         style={styles.input}
         value={name}
         onChangeText={setName}
       />
       <TextInput
-        placeholder="Цена"
+        placeholder="Cena"
         style={styles.input}
         keyboardType="numeric"
         value={price}
         onChangeText={setPrice}
       />
       <TextInput
-        placeholder="Магазин"
+        placeholder="Sklep"
         style={styles.input}
         value={store}
         onChangeText={setStore}
       />
       <TouchableOpacity style={styles.button} onPress={handleAdd}>
-        <Text style={styles.buttonText}>Добавить</Text>
+        <Text style={styles.buttonText}>Dodać</Text>
       </TouchableOpacity>
     </View>
   );
